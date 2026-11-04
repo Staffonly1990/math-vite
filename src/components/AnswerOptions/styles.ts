@@ -1,8 +1,8 @@
 export const styles = {
-  grid: 'grid grid-cols-2 gap-3',
+  grid: 'grid grid-cols-2 gap-2',
   option:
-    'rounded-2xl border px-4 py-5 font-display text-3xl font-semibold tabular-nums select-none touch-manipulation transition-colors',
-  optionIdle: 'border-line bg-surface-2 text-text hover:border-accent/60 hover:bg-accent/10',
-  optionCorrect: 'border-success bg-success/15 text-success',
-  optionWrong: 'border-danger bg-danger/15 text-danger',
+    'l2-button px-3 py-3 font-display text-2xl font-semibold tabular-nums text-text transition-[filter] select-none touch-manipulation sm:text-3xl',
+  optionIdle: 'hover:brightness-125',
+  optionCorrect: 'text-success brightness-150',
+  optionWrong: 'text-danger brightness-90',
 } as const;

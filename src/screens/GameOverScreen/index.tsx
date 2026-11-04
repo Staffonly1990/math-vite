@@ -1,9 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useSelector } from '@tanstack/react-store';
 import { motion } from 'motion/react';
+import { MenuBackground } from '@/components/MenuBackground';
 import { sessionStore, startRun } from '@/stores/session';
-import { settingsStore } from '@/stores/settings';
-import { getDifficulty } from '@/game/difficulty';
 import { formatDuration } from '@/lib/format';
 import { Stat } from '@/components/Stat';
 import { texts } from './texts';
@@ -16,7 +15,7 @@ export function GameOverScreen() {
   const startedAt = useSelector(sessionStore, (s) => s.game.startedAt);
   const endedAt = useSelector(sessionStore, (s) => s.game.endedAt);
   const endReason = useSelector(sessionStore, (s) => s.game.endReason);
-  const difficulty = useSelector(settingsStore, (s) => s.difficulty);
+  const floorNumber = useSelector(sessionStore, (s) => s.game.floorNumber);
 
   const surrendered = endReason === 'surrender';
   const title = surrendered ? texts.titleSurrender : texts.titleWrong;
@@ -30,7 +29,9 @@ export function GameOverScreen() {
   const duration = startedAt !== null && endedAt !== null ? formatDuration(endedAt - startedAt) : texts.noTime;
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className={styles.root}>
+    <>
+      <MenuBackground />
+      <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className={styles.root}>
       <p className={styles.title}>{title}</p>
 
       <div className="text-center">
@@ -44,7 +45,7 @@ export function GameOverScreen() {
         <Stat label={texts.time} value={duration} />
       </div>
 
-      <p className={styles.difficultyNote}>{texts.difficulty(getDifficulty(difficulty).label.toLowerCase())}</p>
+      <p className={styles.difficultyNote}>{texts.floorReached(floorNumber)}</p>
 
       <div className={styles.actions}>
         <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={restart} className={styles.restartButton}>
@@ -54,6 +55,7 @@ export function GameOverScreen() {
           {texts.toMenu}
         </button>
       </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }

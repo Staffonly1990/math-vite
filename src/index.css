@@ -30,3 +30,31 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+@layer components {
+  /*
+   * L2 UI: рамки — border-image из ассетов, вырезанных со скриншота L2
+   * (public/assets/images). Центр ассетов содержит вшитый текст оригинала,
+   * поэтому fill не используем — середину рисуем своим CSS.
+   */
+  .l2-button {
+    border-style: solid;
+    border-width: 8px;
+    border-image: url('/assets/images/button-small.png') 8 stretch;
+    background: linear-gradient(180deg, #2a2a28 0%, #1a1a18 100%);
+  }
+
+  .l2-button-lg {
+    border-style: solid;
+    border-width: 12px;
+    border-image: url('/assets/images/button-start.png') 12 stretch;
+    background: linear-gradient(180deg, #2a2a28 0%, #1a1a18 100%);
+  }
+
+  .l2-panel {
+    border-style: solid;
+    border-width: 12px;
+    border-image: url('/assets/images/panel-frame.png') 12 stretch;
+    background: rgba(10, 13, 20, 0.78);
+  }
+}

@@ -33,22 +33,23 @@ describe('Porta (обычный, ранг 1)', () => {
 });
 
 describe('Mordeo (ядовитый, ранг 2)', () => {
-  it('яд срезает локальное время этажа', () => {
+  it('ядовит, силён вдвое, удары не меняют суть', () => {
     const mordeo = new Mordeo(4, 42);
     expect(mordeo.name).toBe('Mordeo');
     expect(mordeo.rank).toBe(2);
-    expect(mordeo.poison()).toBe(3);
+    expect(mordeo.poisonous).toBe(true);
+    expect(mordeo.strength).toBe(2);
 
     const hurt = mordeo.takeHit(2);
     expect(hurt.hp).toBe(2);
-    expect(hurt.poisonSeconds).toBe(3); // способность переживает удары
+    expect(hurt.poisonous).toBe(true);
   });
 
-  it('roundtrip toJSON/fromJSON сохраняет яд', () => {
-    const mordeo = new Mordeo(4, 50, 5);
+  it('roundtrip toJSON/fromJSON', () => {
+    const mordeo = new Mordeo(4, 50);
     const restored = MonsterFactory.fromJSON(JSON.parse(JSON.stringify(mordeo.toJSON())));
     expect(restored).toEqual(mordeo);
-    expect((restored as Mordeo).poison()).toBe(5);
+    expect((restored as Mordeo).poisonous).toBe(true);
   });
 });
 
@@ -162,28 +163,56 @@ describe('FloorFactory', () => {
   });
 });
 
-describe('Player', () => {
-  it('начисляет адену и получает урон без мутаций', () => {
-    const base = new Player();
-    const rich = base.awardAden(5);
-    const hurt = rich.takeDamage(1);
-
-    expect(base.aden).toBe(0);
-    expect(rich.aden).toBe(5);
-    expect(hurt.hp).toBe(0);
-    expect(hurt.isDead).toBe(true);
+describe('Player — инвариант урона', () => {
+  it('щит глотает удар целиком — HP цел, касания нет', () => {
+    const shielded = new Player(0, 3, 3, 2);
+    const { player, touchedHp } = shielded.takeHit(2);
+    expect(touchedHp).toBe(false);
+    expect(player.shield).toBe(0);
+    expect(player.hp).toBe(3);
   });
 
-  it('roundtrip toJSON/fromJSON', () => {
-    const player = new Player(12, 3, 5);
+  it('щит сломан с переполнением — остаток в HP, касание есть', () => {
+    const shielded = new Player(0, 3, 3, 1);
+    const { player, touchedHp } = shielded.takeHit(2);
+    expect(touchedHp).toBe(true);
+    expect(player.shield).toBe(0);
+    expect(player.hp).toBe(2);
+  });
+
+  it('без щита — весь урон в HP', () => {
+    const bare = new Player(0, 3, 3, 0);
+    const { player, touchedHp } = bare.takeHit(2);
+    expect(touchedHp).toBe(true);
+    expect(player.hp).toBe(1);
+    expect(bare.hp).toBe(3); // без мутаций
+  });
+
+  it('адена, лечение, пластина, антидот, выдох яда по этажам', () => {
+    const rich = new Player().awardAden(5);
+    expect(rich.aden).toBe(5);
+    expect(new Player(0, 1, 3).heal('full').hp).toBe(3);
+    expect(new Player().addShield(2).shield).toBe(2);
+    expect(new Player(0, 3, 3, 0, { stacks: 4, remainingFloors: 2 }).clearPoison().poison).toBeNull();
+
+    let poisoned = new Player().applyPoison().applyPoison();
+    expect(poisoned.poison).toEqual({ stacks: 2, remainingFloors: 3 });
+    poisoned = poisoned.tickPoisonFloor();
+    expect(poisoned.poison?.remainingFloors).toBe(2);
+    expect(poisoned.tickPoisonFloor().tickPoisonFloor().poison).toBeNull();
+  });
+
+  it('roundtrip toJSON/fromJSON с ядом и щитом', () => {
+    const player = new Player(12, 3, 5, 2, { stacks: 1, remainingFloors: 2 });
     expect(Player.fromJSON(JSON.parse(JSON.stringify(player.toJSON())))).toEqual(player);
   });
 });
 
 describe('Game + Floor (задел фазы башни)', () => {
-  it('Game может нести этаж, забег не зависит от него', () => {
-    const game = Game.start(42, 'easy', 0);
-    expect(game.floor).toBeNull();
+  it('забег стартует с первого этажа-двери', () => {
+    const game = Game.start(42, 0);
+    expect(game.floor).not.toBeNull();
+    expect(game.floorNumber).toBe(1);
     expect(game.status).toBe('running');
   });
 });

@@ -1,4 +1,4 @@
-import { getDifficulty } from '../difficulty';
+import { configForLevel } from '../difficulty';
 import type { Rng } from '../rng';
 import { ArithmeticGenerator } from './ArithmeticGenerator';
 import { ArithmeticProblem } from './ArithmeticProblem';
@@ -17,7 +17,7 @@ const generators: { readonly [T in TopicId]: ProblemGenerator } = {
 
 export class ProblemFactory {
   static create(rng: Rng, spec: ProblemSpec): Problem {
-    return generators[spec.topic].generate(rng, getDifficulty(spec.difficulty));
+    return generators[spec.topic].generate(rng, configForLevel(spec.level));
   }
 
   static fromJSON(data: ProblemJSON): Problem {

@@ -10,6 +10,10 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    watch: {
+      // OneDrive рвёт file-watcher события — читаем изменения опросом
+      usePolling: true,
+    },
   },
   test: {
     environment: 'jsdom',

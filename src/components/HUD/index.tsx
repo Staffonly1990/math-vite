@@ -1,24 +1,21 @@
 import { useSelector } from '@tanstack/react-store';
 import { sessionStore } from '@/stores/session';
-import { settingsStore } from '@/stores/settings';
-import { getDifficulty } from '@/game/difficulty';
 import { texts } from './texts';
 import { styles } from './styles';
 
+/** Верхняя строка статов: адена, этаж, уровень сложности, серия */
 export function HUD() {
   const aden = useSelector(sessionStore, (s) => s.game.aden);
-  const index = useSelector(sessionStore, (s) => s.game.index);
+  const floorNumber = useSelector(sessionStore, (s) => s.game.floorNumber);
+  const levelNumber = useSelector(sessionStore, (s) => s.game.level.number);
   const streak = useSelector(sessionStore, (s) => s.game.stats.streak);
-  const difficulty = useSelector(settingsStore, (s) => s.difficulty);
 
   return (
     <div className={styles.root}>
       <span className={styles.adenBadge}>{texts.aden(aden)}</span>
-      <span className={styles.difficulty}>{getDifficulty(difficulty).label.toLowerCase()}</span>
-      <span className={styles.counters}>
-        <span>{texts.streak(streak)}</span>
-        <span>{texts.problemNumber(index + 1)}</span>
-      </span>
+      <span className={styles.floor}>{texts.floor(floorNumber)}</span>
+      <span className={styles.level}>{texts.level(levelNumber)}</span>
+      <span className={styles.counters}>{texts.streak(streak)}</span>
     </div>
   );
 }

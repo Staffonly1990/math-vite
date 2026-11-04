@@ -1,18 +1,17 @@
 import type { Rng } from '../rng';
-import type { DifficultyConfig, DifficultyId } from '../difficulty';
+import type { DifficultyConfig } from '../difficulty';
 import type { Problem } from './Problem';
 
 /**
- * Открытый union тем: новая тема (умножение/деление уже внутри арифметики; дальше —
- * дроби, производные, тригонометрия…) добавляется сюда + одной записью в реестр
- * ProblemFactory — компилятор укажет, если забудешь регистратор.
+ * Открытый union тем: новая тема (дроби, производные, тригонометрия…) добавляется
+ * сюда + одной записью в реестр ProblemFactory — компилятор укажет, если забудешь регистратор.
  */
 export type TopicId = 'arithmetic';
 
-/** Что генерировать: тема + сложность (тир внутри темы) */
+/** Что генерировать: тема + уровень сложности (лестница математики) */
 export interface ProblemSpec {
   topic: TopicId;
-  difficulty: DifficultyId;
+  level: number;
 }
 
 /** Стратегия генерации задач темы. Вся специфика темы — внутри её генератора. */

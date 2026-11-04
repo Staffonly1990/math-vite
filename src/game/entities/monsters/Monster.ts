@@ -17,12 +17,19 @@ export abstract class Monster {
   abstract readonly kind: string;
   abstract readonly name: string;
   abstract readonly rank: MonsterRank;
+  /** ядовитые монстры отравляют при касании HP (без щита или сквозь него) */
+  readonly poisonous: boolean = false;
 
   constructor(
     readonly hp: number,
     readonly maxHp: number,
     readonly level: number,
   ) {}
+
+  /** Сила удара монстра */
+  get strength(): number {
+    return this.rank;
+  }
 
   abstract takeHit(damage?: number): Monster;
 
