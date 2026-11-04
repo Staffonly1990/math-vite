@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0d14;
+  --color-surface: #121724;
+  --color-surface-2: #1a2132;
+  --color-line: #293349;
+  --color-text: #e9edf5;
+  --color-muted: #8d97ac;
+  --color-accent: #ff8a3d;
+  --color-accent-strong: #f95d1d;
+  --color-on-accent: #241102;
+  --color-success: #2fd48a;
+  --color-danger: #f4436b;
+  --font-display: "SF Pro Rounded", ui-rounded, "Segoe UI", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    /* намёк на лаву снизу */
+    background-image: radial-gradient(120% 70% at 50% 115%, rgba(249, 93, 29, 0.14), transparent 55%);
+    background-repeat: no-repeat;
+    color: var(--color-text);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+}
