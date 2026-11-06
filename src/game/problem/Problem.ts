@@ -11,9 +11,9 @@ export abstract class Problem {
   abstract readonly kind: string;
   abstract readonly prompt: string;
   abstract readonly answer: number;
-  /** 4 перемешанных варианта; всегда содержит ответ */
+  /** Перемешанные варианты (2–4); всегда содержит ответ */
   abstract readonly options: readonly number[];
-  /** 3 правдоподобных неверных варианта */
+  /** Правдоподобные неверные варианты */
   abstract readonly distractors: readonly number[];
 
   isCorrect(input: number): boolean {

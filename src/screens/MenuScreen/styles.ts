@@ -1,12 +1,9 @@
 export const styles = {
-  root: 'flex h-dvh w-full flex-col items-center justify-center gap-6 bg-[#05070d] p-4',
-  title:
-    'bg-linear-to-r from-accent via-amber-300 to-accent bg-clip-text font-display text-5xl font-black tracking-tight text-transparent',
-  subtitle: 'mt-1 text-muted',
-  section: 'l2-panel w-full max-w-sm space-y-4 p-4',
-  sectionTitle: 'text-xs font-semibold tracking-wider text-muted uppercase',
-  hint: 'text-xs text-muted',
+  root: 'flex h-dvh w-full items-center justify-center bg-[#05070d] p-4',
+  panel: 'glass-panel w-full max-w-xs p-8 text-center',
+  title: 'font-display text-5xl font-black tracking-tight text-white [text-shadow:0_0_40px_rgba(0,212,255,.45)]',
+  subtitle: 'mt-1 text-sm text-muted',
+  best: 'mt-4 text-xs font-semibold tabular-nums text-accent',
   startButton:
-    'l2-button-lg font-display text-xl font-bold text-text transition-[filter] select-none touch-manipulation hover:brightness-125',
-  rules: 'max-w-sm text-center text-xs leading-relaxed text-muted',
+    'glass-button glass-button--accent mt-6 w-full px-6 py-3 font-display text-xl font-bold select-none touch-manipulation',
 } as const;

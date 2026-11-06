@@ -21,7 +21,7 @@ function swapDigits(n: number): number | null {
 export class ArithmeticGenerator extends ProblemGenerator {
   readonly topic = 'arithmetic' as const;
 
-  generate(rng: Rng, cfg: DifficultyConfig): ArithmeticProblem {
+  generate(rng: Rng, cfg: DifficultyConfig, optionsCount = 4): ArithmeticProblem {
     for (let attempt = 0; attempt < 200; attempt++) {
       const op = rng.pick(cfg.operations);
       // на поздних попытках ослабляем требование переноса, чтобы гарантированно не зациклиться
@@ -35,34 +35,34 @@ export class ArithmeticGenerator extends ProblemGenerator {
         const carries = op === '+' ? additionCarries(a, b) : subtractionBorrows(a, b);
         if (rule === 'require' && !carries) continue;
         if (rule === 'forbid' && carries) continue;
-        return this.finish(rng, a, op, b);
+        return this.finish(rng, a, op, b, optionsCount);
       }
 
       if (op === '*') {
         // устный формат: большое число × однозначный множитель
-        return this.finish(rng, rng.int(cfg.min, cfg.max), op, rng.int(2, 9));
+        return this.finish(rng, rng.int(cfg.min, cfg.max), op, rng.int(2, 9), optionsCount);
       }
 
       // '/': делимое собираем из делителя и частного — деление нацело гарантировано
       const divisor = rng.int(2, 9);
       const maxQuotient = Math.max(2, Math.min(12, Math.floor((cfg.max * 3) / divisor)));
       const quotient = rng.int(2, maxQuotient);
-      return this.finish(rng, divisor * quotient, op, divisor);
+      return this.finish(rng, divisor * quotient, op, divisor, optionsCount);
     }
 
     // недостижимо практически (валидных комбинаций много), но выход должен быть гарантирован
-    return this.finish(rng, rng.int(cfg.min, cfg.max), '+', rng.int(cfg.min, cfg.max));
+    return this.finish(rng, rng.int(cfg.min, cfg.max), '+', rng.int(cfg.min, cfg.max), optionsCount);
   }
 
-  private finish(rng: Rng, a: number, op: Operation, b: number): ArithmeticProblem {
+  private finish(rng: Rng, a: number, op: Operation, b: number, optionsCount: number): ArithmeticProblem {
     const answer = ArithmeticProblem.compute(a, op, b);
-    const distractors = this.buildDistractors(rng, answer);
+    const distractors = this.buildDistractors(rng, answer, optionsCount - 1);
     const options = rng.shuffle([answer, ...distractors]);
     return new ArithmeticProblem(a, op, b, distractors, options);
   }
 
-  /** 3 правдоподобных неверных варианта: ±1/±2/±10/±11/±9, ±100 для трёхзначных, перепутанные цифры */
-  private buildDistractors(rng: Rng, answer: number): number[] {
+  /** Правдоподобные неверные варианты: ±1/±2/±10/±11/±9, ±100 для трёхзначных, перепутанные цифры */
+  private buildDistractors(rng: Rng, answer: number, count: number): number[] {
     const pool: number[] = [];
     const push = (n: number) => {
       if (n >= 0 && n !== answer && !pool.includes(n)) pool.push(n);
@@ -76,11 +76,11 @@ export class ArithmeticGenerator extends ProblemGenerator {
     if (swapped !== null) push(swapped);
 
     // добор на случай маленького пула
-    for (let k = 3; pool.length < 3 && k < 30; k++) {
+    for (let k = 3; pool.length < count && k < 30; k++) {
       push(answer + k);
       push(answer - k);
     }
 
-    return rng.shuffle(pool).slice(0, 3);
+    return rng.shuffle(pool).slice(0, Math.max(0, count));
   }
 }

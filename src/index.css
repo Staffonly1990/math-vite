@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0a0d14;
-  --color-surface: #121724;
-  --color-surface-2: #1a2132;
-  --color-line: #293349;
+  --color-bg: #05070d;
+  --color-surface: #0b101c;
+  --color-surface-2: #121a2c;
+  --color-line: #1f2a42;
   --color-text: #e9edf5;
   --color-muted: #8d97ac;
-  --color-accent: #ff8a3d;
-  --color-accent-strong: #f95d1d;
-  --color-on-accent: #241102;
+  --color-accent: #00d4ff;
+  --color-accent-strong: #7ce8ff;
+  --color-on-accent: #032430;
   --color-success: #2fd48a;
   --color-danger: #f4436b;
   --font-display: "SF Pro Rounded", ui-rounded, "Segoe UI", system-ui, sans-serif;
@@ -22,8 +22,8 @@
 
   body {
     background-color: var(--color-bg);
-    /* намёк на лаву снизу */
-    background-image: radial-gradient(120% 70% at 50% 115%, rgba(249, 93, 29, 0.14), transparent 55%);
+    /* холодное неоновое свечение снизу */
+    background-image: radial-gradient(120% 70% at 50% 115%, rgba(0, 212, 255, 0.09), transparent 55%);
     background-repeat: no-repeat;
     color: var(--color-text);
     font-family: var(--font-display);
@@ -32,29 +32,72 @@
 }
 
 @layer components {
-  /*
-   * L2 UI: рамки — border-image из ассетов, вырезанных со скриншота L2
-   * (public/assets/images). Центр ассетов содержит вшитый текст оригинала,
-   * поэтому fill не используем — середину рисуем своим CSS.
-   */
-  .l2-button {
-    border-style: solid;
-    border-width: 8px;
-    border-image: url('/assets/images/button-small.png') 8 stretch;
-    background: linear-gradient(180deg, #2a2a28 0%, #1a1a18 100%);
+  /* Стекло (Smash Hit): полупрозрачная панель + blur + тонкий светлый кант */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
   }
 
-  .l2-button-lg {
-    border-style: solid;
-    border-width: 12px;
-    border-image: url('/assets/images/button-start.png') 12 stretch;
-    background: linear-gradient(180deg, #2a2a28 0%, #1a1a18 100%);
+  .glass-button {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    transition: filter 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .l2-panel {
-    border-style: solid;
-    border-width: 12px;
-    border-image: url('/assets/images/panel-frame.png') 12 stretch;
-    background: rgba(10, 13, 20, 0.78);
+  .glass-button:hover {
+    filter: brightness(1.3);
   }
+
+  .glass-button--accent {
+    background: rgba(0, 212, 255, 0.12);
+    border-color: rgba(0, 212, 255, 0.45);
+    box-shadow: 0 0 24px rgba(0, 212, 255, 0.2);
+    color: var(--color-accent-strong);
+  }
+}
+
+/* счёт: реакции числа */
+@keyframes wr-score-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+@keyframes wr-score-green { 0% { fill: #2fd48a; } 100% { fill: #ffd84a; } }
+@keyframes wr-score-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes wr-score-red { 0% { fill: #f4436b; } 100% { fill: #ffd84a; } }
+@keyframes wr-score-deny {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(0.94); }
+}
+/* ГО — вскрики с трибун: прыжок с наклоном в свою сторону */
+@keyframes wr-go-cheer-left {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-12px) rotate(-15deg); }
+}
+@keyframes wr-go-cheer-right {
+  0%, 100% { transform: translateY(0) rotate(8deg); }
+  50% { transform: translateY(-12px) rotate(15deg); }
+}
+/* дельта-стрелки у числа */
+@keyframes wr-delta-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+@keyframes wr-delta-down {
+  0% { opacity: 0; transform: translateY(-8px); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(30px); }
 }

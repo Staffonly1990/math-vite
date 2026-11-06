@@ -1,22 +1,14 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useSelector } from '@tanstack/react-store';
 import { motion } from 'motion/react';
-import { Segmented } from '@/components/Segmented';
-import type { SegmentOption } from '@/components/Segmented';
-import { setInputMode, settingsStore } from '@/stores/settings';
-import type { InputMode } from '@/stores/settings';
+import { wallRecordsStore } from '@/stores/wallRecords';
 import { startWallRun } from '@/stores/wallSession';
 import { texts } from './texts';
 import { styles } from './styles';
 
-const inputModeOptions: SegmentOption<InputMode>[] = [
-  { value: 'choice', label: texts.inputModeChoice },
-  { value: 'input', label: texts.inputModeInput },
-];
-
 export function MenuScreen() {
   const navigate = useNavigate();
-  const inputMode = useSelector(settingsStore, (s) => s.inputMode);
+  const best = useSelector(wallRecordsStore, (s) => s.best);
 
   const start = () => {
     startWallRun();
@@ -25,26 +17,14 @@ export function MenuScreen() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.root}>
-      <header className="text-center">
+      <div className={styles.panel}>
         <h1 className={styles.title}>MATH</h1>
         <p className={styles.subtitle}>{texts.subtitle}</p>
-      </header>
-
-      <section className={styles.section}>
-        <div className="space-y-2">
-          <span className={styles.sectionTitle}>{texts.inputModeSection}</span>
-          <Segmented aria-label={texts.inputModeSection} options={inputModeOptions} value={inputMode} onChange={setInputMode} />
-          <p className={styles.hint}>
-            {inputMode === 'choice' ? texts.inputModeChoiceHint : texts.inputModeInputHint}
-          </p>
-        </div>
-      </section>
-
-      <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={start} className={styles.startButton}>
-        {texts.startButton}
-      </motion.button>
-
-      <p className={styles.rules}>{texts.rules}</p>
+        <p className={styles.best}>{best !== null ? texts.best(best) : texts.noBest}</p>
+        <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={start} className={styles.startButton}>
+          {texts.startButton}
+        </motion.button>
+      </div>
     </motion.div>
   );
 }

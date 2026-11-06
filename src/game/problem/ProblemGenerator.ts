@@ -12,10 +12,12 @@ export type TopicId = 'arithmetic';
 export interface ProblemSpec {
   topic: TopicId;
   level: number;
+  /** число вариантов ответа (2–4) = число полос; по умолчанию 4 */
+  optionsCount?: number;
 }
 
 /** Стратегия генерации задач темы. Вся специфика темы — внутри её генератора. */
 export abstract class ProblemGenerator {
   abstract readonly topic: TopicId;
-  abstract generate(rng: Rng, cfg: DifficultyConfig): Problem;
+  abstract generate(rng: Rng, cfg: DifficultyConfig, optionsCount?: number): Problem;
 }

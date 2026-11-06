@@ -17,7 +17,7 @@ const generators: { readonly [T in TopicId]: ProblemGenerator } = {
 
 export class ProblemFactory {
   static create(rng: Rng, spec: ProblemSpec): Problem {
-    return generators[spec.topic].generate(rng, configForLevel(spec.level));
+    return generators[spec.topic].generate(rng, configForLevel(spec.level), spec.optionsCount ?? 4);
   }
 
   static fromJSON(data: ProblemJSON): Problem {

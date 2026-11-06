@@ -17,7 +17,7 @@ export function reduce(game: WallGame, action: WallAction): WallGame {
     case 'WALL/TICK':
       return game.tick(action.at);
     case 'WALL/SURRENDER':
-      return game.surrender(action.at);
+      return game.surrender();
     case 'WALL/RESET':
       return WallGameClass.idle();
   }
