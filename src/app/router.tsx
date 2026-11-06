@@ -1,8 +1,8 @@
 import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router';
 import { MenuScreen } from '@/screens/MenuScreen';
-import { GameScreen } from '@/screens/GameScreen';
-import { GameOverScreen } from '@/screens/GameOverScreen';
-import { sessionStore } from '@/stores/session';
+import { WallGameScreen } from '@/screens/WallGameScreen';
+import { WallGameOverScreen } from '@/screens/WallGameOverScreen';
+import { wallStore } from '@/stores/wallSession';
 import { RootLayout } from '@/components/RootLayout';
 
 const rootRoute = createRootRoute({ component: RootLayout });
@@ -16,19 +16,18 @@ const indexRoute = createRoute({
 const gameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/game',
-  component: GameScreen,
+  component: WallGameScreen,
 });
 
 const gameoverRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/gameover',
   beforeLoad: () => {
-    // без завершённого забега на этом экране делать нечего
-    if (sessionStore.state.game.status !== 'gameover') {
+    if (wallStore.state.game.status !== 'gameover') {
       throw redirect({ to: '/' });
     }
   },
-  component: GameOverScreen,
+  component: WallGameOverScreen,
 });
 
 const routeTree = rootRoute.addChildren([indexRoute, gameRoute, gameoverRoute]);

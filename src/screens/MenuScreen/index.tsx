@@ -6,7 +6,7 @@ import { Segmented } from '@/components/Segmented';
 import type { SegmentOption } from '@/components/Segmented';
 import { setInputMode, settingsStore } from '@/stores/settings';
 import type { InputMode } from '@/stores/settings';
-import { startRun } from '@/stores/session';
+import { startWallRun } from '@/stores/wallSession';
 import { texts } from './texts';
 import { styles } from './styles';
 
@@ -20,7 +20,7 @@ export function MenuScreen() {
   const inputMode = useSelector(settingsStore, (s) => s.inputMode);
 
   const start = () => {
-    startRun();
+    startWallRun();
     void navigate({ to: '/game' });
   };
 
