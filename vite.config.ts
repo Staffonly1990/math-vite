@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // GitHub Pages: сайт живёт в подпапке /math-vite/
+  base: '/math-vite/',
   resolve: {
     alias: { '@': '/src' },
   },
