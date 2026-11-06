@@ -4,7 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { AnswerOptions } from '.';
 import { ArithmeticProblem } from '@/game/problem/ArithmeticProblem';
 
-const problem = new ArithmeticProblem(47, '+', 54, [98, 112, 99], [98, 101, 112, 99]);
+const problem = new ArithmeticProblem(
+  { kind: 'num', value: 47 },
+  [{ op: '+', term: { kind: 'num', value: 54 } }],
+  [98, 112, 99],
+  [98, 101, 112, 99],
+);
 
 describe('AnswerOptions', () => {
   it('рисует 4 варианта и сообщает выбранный', async () => {

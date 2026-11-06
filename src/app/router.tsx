@@ -19,7 +19,9 @@ const gameRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([indexRoute, gameRoute]);
 
-export const router = createRouter({ routeTree });
+// basepath из vite base: dev и зеркало живут в /math-vite/, корневой сайт — в /.
+// Без этого роутер не матчит '/' при base-подпапке и показывает Not Found.
+export const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL });
 
 declare module '@tanstack/react-router' {
   interface Register {

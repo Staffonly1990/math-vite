@@ -1,64 +1,114 @@
-import type { CarryRule, DifficultyConfig, Operation } from '../difficulty';
+import type { DifficultyConfig, StageFocus } from '../difficulty';
 import type { Rng } from '../rng';
 import { ArithmeticProblem } from './ArithmeticProblem';
+import type { Expression, Suffix, Term } from './ArithmeticProblem';
+import { termValue } from './ArithmeticProblem';
 import { ProblemGenerator } from './ProblemGenerator';
-
-const ones = (n: number) => n % 10;
-const additionCarries = (a: number, b: number) => ones(a) + ones(b) >= 10;
-const subtractionBorrows = (a: number, b: number) => ones(a) < ones(b);
 
 /** Переставить цифры: 47 → 74 — правдоподобный «промах по разряду» */
 function swapDigits(n: number): number | null {
   if (n < 10 || n >= 100) return null;
-  const swapped = ones(n) * 10 + Math.floor(n / 10);
+  const swapped = (n % 10) * 10 + Math.floor(n / 10);
   return swapped === n ? null : swapped;
 }
 
 /**
- * Генератор арифметики: + − × ÷ по правилам сложности.
- * Деление — всегда без остатка (собирается из делителя и частного).
+ * Генератор арифметики «знак × количество чисел»:
+ *   пример = слагаемые/вычитаемые (1..9 или 11..99) + максимум один ×-терм
+ *   и один ÷-терм (÷ нацело по построению); все промежуточные суммы ≥ 0, ответ ≥ 1.
  */
 export class ArithmeticGenerator extends ProblemGenerator {
   readonly topic = 'arithmetic' as const;
 
   generate(rng: Rng, cfg: DifficultyConfig, optionsCount = 4): ArithmeticProblem {
     for (let attempt = 0; attempt < 200; attempt++) {
-      const op = rng.pick(cfg.operations);
-      // на поздних попытках ослабляем требование переноса, чтобы гарантированно не зациклиться
-      const rule: CarryRule = attempt < 100 ? cfg.carry : 'any';
-
-      if (op === '+' || op === '-') {
-        let a = rng.int(cfg.min, cfg.max);
-        let b = rng.int(cfg.min, cfg.max);
-        if (op === '-' && a < b) [a, b] = [b, a]; // ответ всегда неотрицательный
-        if (op === '-' && a === b) continue; // a − a = 0 — тривиально
-        const carries = op === '+' ? additionCarries(a, b) : subtractionBorrows(a, b);
-        if (rule === 'require' && !carries) continue;
-        if (rule === 'forbid' && carries) continue;
-        return this.finish(rng, a, op, b, optionsCount);
-      }
-
-      if (op === '*') {
-        // устный формат: большое число × однозначный множитель
-        return this.finish(rng, rng.int(cfg.min, cfg.max), op, rng.int(2, 9), optionsCount);
-      }
-
-      // '/': делимое собираем из делителя и частного — деление нацело гарантировано
-      const divisor = rng.int(2, 9);
-      const maxQuotient = Math.max(2, Math.min(12, Math.floor((cfg.max * 3) / divisor)));
-      const quotient = rng.int(2, maxQuotient);
-      return this.finish(rng, divisor * quotient, op, divisor, optionsCount);
+      const expr = this.buildExpression(rng, cfg);
+      if (expr && this.isValid(expr)) return this.finish(rng, expr, optionsCount);
     }
-
-    // недостижимо практически (валидных комбинаций много), но выход должен быть гарантирован
-    return this.finish(rng, rng.int(cfg.min, cfg.max), '+', rng.int(cfg.min, cfg.max), optionsCount);
+    // недостижимо практически (валидных комбинаций много), но выход должен быть гарантирован:
+    // чистое сложение из cfg.numbers маленьких слагаемых — всегда валидно
+    const expr: Expression = {
+      first: { kind: 'num', value: rng.int(1, 9) },
+      rest: Array.from({ length: cfg.numbers - 1 }, () => ({
+        op: '+' as const,
+        term: { kind: 'num' as const, value: rng.int(1, 9) },
+      })),
+    };
+    return this.finish(rng, expr, optionsCount);
   }
 
-  private finish(rng: Rng, a: number, op: Operation, b: number, optionsCount: number): ArithmeticProblem {
-    const answer = ArithmeticProblem.compute(a, op, b);
+  /** Какие специальные термы (×/÷) нужны этапу */
+  private specialPlan(rng: Rng, focus: StageFocus, numbers: number): Array<'mul' | 'div'> {
+    switch (focus) {
+      case '+':
+      case '-':
+      case 'big':
+        return [];
+      case '*':
+        return ['mul'];
+      case '/':
+        // последний ÷-этап (4 числа): половина примеров — с ×-термом, микс
+        return numbers === 4 && rng.next() < 0.5 ? ['mul', 'div'] : ['div'];
+      case 'all': {
+        const roll = rng.next();
+        if (roll < 1 / 3) return [];
+        if (roll < 2 / 3) return [rng.next() < 0.5 ? 'mul' : 'div'];
+        return ['mul', 'div'];
+      }
+    }
+  }
+
+  /** ×-терм — из таблицы; ÷-терм — делимое собрано из делителя и частного, нацело гарантировано */
+  private specialTerm(rng: Rng, kind: 'mul' | 'div', factorMax: number): Term {
+    if (kind === 'mul') return { kind: 'mul', a: rng.int(2, factorMax), b: rng.int(2, factorMax) };
+    const divisor = rng.int(2, factorMax);
+    const quotient = rng.int(2, factorMax);
+    return { kind: 'div', a: divisor * quotient, b: divisor };
+  }
+
+  /** Знаки между термами: '+' — все плюсы; '-' — минимум один минус; остальные — смесь */
+  private joiners(rng: Rng, focus: StageFocus, count: number): Array<'+' | '-'> {
+    if (count <= 0) return [];
+    if (focus === '+') return Array.from({ length: count }, () => '+' as const);
+    const ops = Array.from({ length: count }, () => (rng.next() < 0.5 ? '+' : '-') as '+' | '-');
+    if (focus === '-' && !ops.includes('-')) ops[rng.int(0, count - 1)] = '-';
+    return ops;
+  }
+
+  private buildExpression(rng: Rng, cfg: DifficultyConfig): Expression | null {
+    const specials = this.specialPlan(rng, cfg.focus, cfg.numbers);
+    const plainCount = cfg.numbers - specials.length * 2;
+    if (plainCount < 0) return null; // терм не влезает в число мест — пересобираем
+
+    // двузначный ярус и финальный микс — операнды 11..99, остальные этапы 1..9
+    const big = cfg.focus === 'big' || cfg.focus === 'all';
+
+    const terms: Term[] = specials.map((kind) => this.specialTerm(rng, kind, cfg.factorMax));
+    for (let i = 0; i < plainCount; i++) {
+      terms.push({ kind: 'num', value: rng.int(big ? 11 : 1, cfg.addMax) });
+    }
+
+    const shuffled = rng.shuffle(terms);
+    const ops = this.joiners(rng, cfg.focus, shuffled.length - 1);
+    const rest: Suffix[] = shuffled.slice(1).map((term, i) => ({ op: ops[i], term }));
+    return { first: shuffled[0], rest };
+  }
+
+  /** Инварианты: все промежуточные суммы ≥ 0 и ответ ≥ 1 (без тривиальных нулей) */
+  private isValid(expr: Expression): boolean {
+    let sum = termValue(expr.first);
+    for (const s of expr.rest) {
+      sum += s.op === '+' ? termValue(s.term) : -termValue(s.term);
+      if (sum < 0) return false;
+    }
+    return sum >= 1;
+  }
+
+  private finish(rng: Rng, expr: Expression, optionsCount: number): ArithmeticProblem {
+    const answer = ArithmeticProblem.evaluate(expr.first, expr.rest);
     const distractors = this.buildDistractors(rng, answer, optionsCount - 1);
     const options = rng.shuffle([answer, ...distractors]);
-    return new ArithmeticProblem(a, op, b, distractors, options);
+    return new ArithmeticProblem(expr.first, expr.rest, distractors, options);
   }
 
   /** Правдоподобные неверные варианты: ±1/±2/±10/±11/±9, ±100 для трёхзначных, перепутанные цифры */

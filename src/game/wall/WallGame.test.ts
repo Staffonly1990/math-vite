@@ -58,14 +58,23 @@ describe('экономика: пороги и производные', () => {
     expect(lanesForLevel(2)).toBe(3);
     expect(lanesForLevel(3)).toBe(4);
     expect(lanesForLevel(9)).toBe(4);
-    expect(mathLevelForLevel(0)).toBe(1);   // «+»
+    expect(mathLevelForLevel(0)).toBe(1);   // +(2)
     expect(mathLevelForLevel(1)).toBe(1);   // отдых по математике при +полосе
-    expect(mathLevelForLevel(2)).toBe(2);   // «+−»
+    expect(mathLevelForLevel(2)).toBe(2);   // +(3)
     expect(mathLevelForLevel(3)).toBe(2);   // отдых при +полосе
-    expect(mathLevelForLevel(4)).toBe(3);   // «+−×»
-    expect(mathLevelForLevel(5)).toBe(4);   // «+−×÷»
-    expect(mathLevelForLevel(6)).toBe(5);   // дальше диапазоны растут
-    expect(mathLevelForLevel(9)).toBe(8);
+    expect(mathLevelForLevel(4)).toBe(3);   // +(4)
+    expect(mathLevelForLevel(5)).toBe(4);   // −(2)
+    expect(mathLevelForLevel(7)).toBe(6);   // −(4)
+    expect(mathLevelForLevel(8)).toBe(7);   // двузначные ±(2)
+    expect(mathLevelForLevel(10)).toBe(9);  // двузначные ±(4)
+    expect(mathLevelForLevel(11)).toBe(10); // ×(2) таблица
+    expect(mathLevelForLevel(12)).toBe(11); // ×(3)
+    expect(mathLevelForLevel(13)).toBe(12); // ×(4)
+    expect(mathLevelForLevel(14)).toBe(13); // ÷(2) таблица
+    expect(mathLevelForLevel(16)).toBe(15); // ÷(4) микс — контент полон
+    expect(mathLevelForLevel(17)).toBe(15); // отдых при скорости ×2
+    expect(mathLevelForLevel(18)).toBe(16); // финальный микс
+    expect(mathLevelForLevel(99)).toBe(16); // дальше не растёт
   });
 
   it('зона ×2: касание плитой отрезка, не центр — и СЖИМАЕТСЯ с уровнем', () => {
@@ -80,13 +89,13 @@ describe('экономика: пороги и производные', () => {
     expect(zoneHalfForLevel(20)).toBeCloseTo(0.015);   // пол
   });
 
-  it('скорость — только целые: ×1 до ур.6, ×2 до ур.8, дальше ×3', () => {
+  it('скорость — только целые: ×1 до ур.17, ×2 до ур.21, дальше ×3', () => {
     expect(speedForLevel(0)).toBe(1);
-    expect(speedForLevel(5)).toBe(1);
-    expect(speedForLevel(6)).toBe(2);
-    expect(speedForLevel(7)).toBe(2);
-    expect(speedForLevel(8)).toBe(3);
-    expect(speedForLevel(20)).toBe(3);
+    expect(speedForLevel(16)).toBe(1);
+    expect(speedForLevel(17)).toBe(2);
+    expect(speedForLevel(20)).toBe(2);
+    expect(speedForLevel(21)).toBe(3);
+    expect(speedForLevel(50)).toBe(3);
   });
 });
 
@@ -257,7 +266,7 @@ describe('WallGame v2: прочее', () => {
     const fast = answerCorrect(WallGame.start(42, T0), 36); // ур.3, полосы 4, темп ×1
     expect(fast.lanes).toBe(4);
     expect(fast.speedMultiplier).toBe(1);
-    const turbo = answerCorrect(WallGame.start(42, T0), 67); // ур.6 → ×2
+    const turbo = answerCorrect(WallGame.start(42, T0), 166); // ур.17 → ×2
     expect(turbo.speedMultiplier).toBe(2);
     expect(BASE_APPROACH_MS / turbo.speedMultiplier).toBeLessThan(BASE_APPROACH_MS);
   });
