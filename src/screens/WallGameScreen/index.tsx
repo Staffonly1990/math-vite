@@ -53,10 +53,10 @@ export function WallGameScreen() {
     if (wallStore.state.game.status === 'idle') startWallRun();
   }, []);
 
-  // gameover → экран итогов
+  // gameover → сразу в меню
   useEffect(() => {
     if (status === 'gameover') {
-      const timer = setTimeout(() => void navigate({ to: '/gameover' }), 1200);
+      const timer = setTimeout(() => void navigate({ to: '/' }), 1000);
       return () => clearTimeout(timer);
     }
   }, [status, navigate]);

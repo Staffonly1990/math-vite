@@ -4,9 +4,7 @@ import { styles } from './styles';
 export function RootLayout() {
   return (
     <div className={styles.root}>
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   );
 }
